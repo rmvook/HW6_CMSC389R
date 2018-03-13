@@ -3,24 +3,17 @@
 import sys
 import struct
 import datetime
-print(
-   
-)
-
-# cmsc389  63 6d 73 63 33 38 39
-# CMSC389  43 4d 53 43 33 38 39
 
 # You can use this method to exit on failure conditions.
 def bork(msg):
     sys.exit(msg)
-
 
 # Some constants. You shouldn't need to change these.
 MAGIC = 0xbefedade
 VERSION = 1
 
 if len(sys.argv) < 2:
-    sys.exit("Usage: python2 stub.py input_file.rcff")
+    sys.exit("Usage: python2 stub.py input_file.rcff ")
 
 # Normally we'd parse a stream to save memory, but the RCFF files in this
 # assignment are relatively small.
@@ -38,89 +31,78 @@ if magic != MAGIC:
 if version != VERSION:
     bork("Bad version! Got %d, expected %d" % (int(version), int(VERSION)))
 
-#,  = struct.unpack("<LL", data[8:16])
-
 def main():
-	print("------- HEADER -------")
-	print("MAGIC: %s" % hex(magic))
-	print("VERSION: %d" % int(version))
+	print(" ------- HEADER ------- ")
+	print(" MAGIC: %s" % hex(magic))
+	print(" VERSION: %d" % int(version))
 
 	# We've parsed the magic and version out for you, but you're responsible for
 	# the rest of the header and the actual RCFF body. Good luck!
-	print("TIMESTAMP: " +  datetime.datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S'))
-	print("AUTHOR: %s" % author)
-	print("SECTION_COUNT: %d" % section_count)
+	print(" TIMESTAMP: " +  datetime.datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S'))
+	print(" AUTHOR: %s" % author)
+	print(" SECTION_COUNT: %d" % section_count)
 
-	print("-------  BODY  -------")
+	print("-------  BODY  ------- ")
 
-	start = 24
-	end = start + 8
+	start = 24 # I know that since the header is 24 bytes I need to start there
+	end = start + 8 # first 8 bytes will include section type and length
 	for i in  range(11):
 		section_type, section_length = struct.unpack("<LL", data[start:end])
+		section_number = i + 1
+		print(" SECTION NUMBER: %d" % section_number)
+		print(" SECTION_TYPE: %d" % section_type)
+		print(" SECTION_LENGTH: %d" % section_length)
 
-		print("SECTION_TYPE: %d" % section_type)
-		print("SECTION_LENGTH: %d" % section_length)
-		'''	
-		SECTION_ASCII (0x1)
-		SECTION_UTF8 (0x2) -- UTF-8-encoded text^3.
-		SECTION_WORDS (0x3) -- Array of words.
-		SECTION_DWORDS (0x4) -- Array of dwords.
-		SECTION_DOUBLES (0x5) -- Array of doubles.
-		SECTION_COORD (0x6) -- (Latitude, longitude) tuple of doubles.
-		SECTION_REFERENCE (0x7) -- The index of another section.
-		SECTION_PNG (0x8) -- Embedded PNG image.
-		'''
-		current = end + section_length
-
-
+		start_of_section = end
+		end_of_section = start_of_section + section_length
+		print(" START BYTE: %d " %start_of_section)
+		print(" END BYTE: %d " %end_of_section)
+		
 		if section_type == 1:
-			print("SECTION_ASCII")
+			print(" SECTION_ASCII ")
 			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[end:current])
-			print("CONTENTS: %s\n" % contents)
-
+			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 2:
-			print("SECTION_UTF8")
+			print(" SECTION_UTF8 ")
 			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[end:current])
-			print("CONTENTS: %s\n" % contents)
+			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 3:
-			print("SECTION_WORDS")
+			print(" SECTION_WORDS ")
 			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[end:current])
-			print("CONTENTS: %s\n" % unicode(contents))
+			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			print(" CONTENTS: %s\n" % unicode(contents))
 		elif section_type == 4:
-			print("SECTION_DWORDS")
+			print(" SECTION_DWORDS ")
 			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[end:current])
-			print("CONTENTS: %s\n" % contents)
+			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 5:
-			print("SECTION_DOUBLES")
+			print(" SECTION_DOUBLES ")
 			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[end:current])
-			print("CONTENTS: %s\n" % contents)
+			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 6:
-			print("SECTION_COORD")
+			print(" SECTION_COORD ")
 			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[end:current])
-			print("CONTENTS: %s\n" % contents)
+			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 7:
-			print("SECTION_REFERENCE")
+			print(" SECTION_REFERENCE ")
 			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[end:current])
-			print("CONTENTS: %s\n" % contents)
+			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			print(type(contents))
+			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 8:
-			print("SECTION_PNG")
+			print(" SECTION_PNG ")
 		
 		else:
-			print("ERROR")
+			print(" ERROR ")
 			sys.exit()
-		
-
-
-		
-
-		start = current
+				
+		#setting up the start and end of the section header for the next iteration of the loop
+		start = end_of_section 
 		end = start + 8
 
 if __name__ == "__main__":
