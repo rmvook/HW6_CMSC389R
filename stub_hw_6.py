@@ -11,6 +11,8 @@ def bork(msg):
 # Some constants. You shouldn't need to change these.
 MAGIC = 0xbefedade
 VERSION = 1
+PNGMAGIC = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
+
 
 if len(sys.argv) < 2:
     sys.exit("Usage: python2 stub.py input_file.rcff ")
@@ -46,9 +48,12 @@ def main():
 
 	start = 24 # I know that since the header is 24 bytes I need to start there
 	end = start + 8 # first 8 bytes will include section type and length
-	for i in  range(11):
+	extra_secionts = 2 # start at 0 and increment until it crashes to get the real number
+	for i in  range(section_count + extra_secionts):
 		section_type, section_length = struct.unpack("<LL", data[start:end])
 		section_number = i + 1
+		if(section_length < 0):
+			bork("length less than ZERO")
 		print(" SECTION NUMBER: %d" % section_number)
 		print(" SECTION_TYPE: %d" % section_type)
 		print(" SECTION_LENGTH: %d" % section_length)
@@ -60,43 +65,56 @@ def main():
 		
 		if section_type == 1:
 			print(" SECTION_ASCII ")
-			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			contents = struct.unpack(str(section_length) + "s", data[start_of_section:end_of_section])
 			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 2:
 			print(" SECTION_UTF8 ")
-			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			contents = struct.unpack(str(section_length) + "s", data[start_of_section:end_of_section])
 			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 3:
 			print(" SECTION_WORDS ")
-			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			if(0 != section_length % 4):
+				bork("section length error != mod 4")
+			contents = struct.unpack("<%dL" % (section_length/4), data[start_of_section:end_of_section])
 			print(" CONTENTS: %s\n" % unicode(contents))
 		elif section_type == 4:
 			print(" SECTION_DWORDS ")
-			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[start_of_section:end_of_section])
-			print(" CONTENTS: %s\n" % contents)
+			if(0 != section_length % 8):
+				bork("section length error != mod 8")
+			contents = struct.unpack("<%dQ" % (section_length/8), data[start_of_section:end_of_section])
+			print(" CONTENTS: ")
+			for i in range (section_length / 8):
+				print(contents[i])
+			print("\n")
 		elif section_type == 5:
 			print(" SECTION_DOUBLES ")
-			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[start_of_section:end_of_section])
+			if(0 != section_length % 8):
+				bork("section length error != mod 8")
+			contents = struct.unpack(str(section_length) + "s", data[start_of_section:end_of_section])
 			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 6:
 			print(" SECTION_COORD ")
-			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[start_of_section:end_of_section])
-			print(" CONTENTS: %s\n" % contents)
+			if(16 != section_length):
+				bork("section length error != 16")
+			cord_1 , cord_2 = struct.unpack("<dd", data[start_of_section:end_of_section])
+			print(" CONTENTS: %s , %s \n" %(str(cord_1), str(cord_2)))
 		elif section_type == 7:
 			print(" SECTION_REFERENCE ")
-			args = str(section_length) + "s"
-			contents , = struct.unpack(args, data[start_of_section:end_of_section])
-			print(type(contents))
+			if(4 !=section_length):
+				bork("error bad section length != 4")
+			contents, = struct.unpack("<L", data[start_of_section:end_of_section])
+			if(-1 > contents or contents > section_count):
+				print(contents)
+				bork("-1 or over max error on sections...")
 			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 8:
 			print(" SECTION_PNG ")
-		
+			contents =  data[start_of_section:end_of_section]
+			pngFile = PNGMAGIC + contents #hex header for png file
+			outFile = open(str(section_number) +"_output.png", "wb") #write binary for windows machines
+			outFile.write(pngFile)
+			outFile.close()
+			
 		else:
 			print(" ERROR ")
 			sys.exit()
