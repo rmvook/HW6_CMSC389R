@@ -3,7 +3,9 @@
 import sys
 import struct
 import datetime
-
+'''
+This code is designed to parse the .fpff file format for my CMSC389R course. Code is stored on Github and the writeup is on medium. look for my username rmvook
+'''
 # You can use this method to exit on failure conditions.
 def bork(msg):
     sys.exit(msg)
@@ -12,7 +14,6 @@ def bork(msg):
 MAGIC = 0xbefedade
 VERSION = 1
 PNGMAGIC = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
-
 
 if len(sys.argv) < 2:
     sys.exit("Usage: python2 stub.py input_file.rcff ")
@@ -104,12 +105,11 @@ def main():
 				bork("error bad section length != 4")
 			contents, = struct.unpack("<L", data[start_of_section:end_of_section])
 			if(-1 > contents or contents > section_count):
-				print(contents)
 				bork("-1 or over max error on sections...")
 			print(" CONTENTS: %s\n" % contents)
 		elif section_type == 8:
 			print(" SECTION_PNG ")
-			contents =  data[start_of_section:end_of_section]
+			contents =  data[start_of_section:end_of_section] #didn't need to unpack, just looked at the file
 			pngFile = PNGMAGIC + contents #hex header for png file
 			outFile = open(str(section_number) +"_output.png", "wb") #write binary for windows machines
 			outFile.write(pngFile)
@@ -125,20 +125,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-
-'''
-flags: Q01TQzM4OVIte2gxZGQzbi1zM2N0MTBuLTFuLWYxbDN9 converts in base 64 to utf-8 as 
-CMSC389R-{h1dd3n-s3ct10n-1n-f1l3}
-
-I used: https://www.base64decode.org/
-
-
-NF2CO4ZANRUWWZJAMEQGMYLDORXXE6JMEBRHK5BAMZXXEIDGN5XWIIIK
-
-was base32 for 
-
-it's like a factory, but for food!
-
-
-'''
