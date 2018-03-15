@@ -13,7 +13,13 @@ def bork(msg):
 # Some constants. You shouldn't need to change these.
 MAGIC = 0xbefedade
 VERSION = 1
-PNGMAGIC = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
+
+key = "jetfule can't melt dank memes"
+xorWord = lambda ss,cc: ''.join(chr(ord(s)^ord(c)) for s,c in zip(ss,cc*100))
+f = open("key.txt", 'r')
+xor =  f.read().replace('\n', '')
+PNGMAGIC = xorWord(xor,key)
+f.close()
 
 if len(sys.argv) < 2:
     sys.exit("Usage: python2 stub.py input_file.rcff ")
